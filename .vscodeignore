@@ -1,0 +1,17 @@
+src/**
+tsconfig.json
+**/*.map
+node_modules/@types/**
+node_modules/typescript/**
+node_modules/@vscode/**
+out/test/**
+node_modules/cytoscape/**
+node_modules/cytoscape-dagre/**
+node_modules/dagre/**
+node_modules/marked/**
+node_modules/mermaid/**
+node_modules/katex/**
+scripts/**
+paper-analysis/**
+sessions/**
+*.vsix

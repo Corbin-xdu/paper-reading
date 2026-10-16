@@ -1,0 +1,18 @@
+body{font-family:var(--vscode-font-family);color:var(--vscode-foreground);padding:0 14px;line-height:1.6;font-size:var(--vscode-font-size)}
+nav{position:sticky;top:0;background:var(--vscode-editor-background);padding:8px 0;border-bottom:1px solid var(--vscode-panel-border);z-index:9;display:flex;flex-wrap:wrap;gap:4px}
+button{background:var(--vscode-button-secondaryBackground);color:var(--vscode-button-secondaryForeground);border:none;padding:4px 10px;cursor:pointer;border-radius:2px}
+button.on,button.primary{background:var(--vscode-button-background);color:var(--vscode-button-foreground)}
+.cols{display:flex;gap:16px}.cols>div{flex:1;min-width:0;overflow:auto;max-height:85vh}
+table{border-collapse:collapse;width:100%}td,th{border:1px solid var(--vscode-panel-border);padding:4px 8px;vertical-align:top}
+.katex-display{overflow-x:auto;overflow-y:hidden;margin:.4em 0}td .katex,th .katex{font-size:.92em}
+pre{background:var(--vscode-textCodeBlock-background);padding:8px;overflow:auto}a{color:var(--vscode-textLink-foreground);cursor:pointer}
+pre.mermaid{background:transparent;text-align:center}.mermaid-err{border:1px dashed orange}
+#cy{width:100%;height:calc(100vh - 110px);border:1px solid var(--vscode-panel-border)}
+.toolbar{display:flex;gap:6px;align-items:center;margin:6px 0;flex-wrap:wrap}.toolbar input{background:var(--vscode-input-background);color:var(--vscode-input-foreground);border:1px solid var(--vscode-input-border,#8885);padding:3px 6px}
+.flow{display:flex;flex-direction:column;align-items:center;gap:0;padding:10px 0}
+.step{display:grid;grid-template-columns:36px 1fr;gap:8px;width:min(900px,100%);border:1px solid var(--vscode-panel-border);border-radius:6px;padding:8px;cursor:pointer}
+.step:hover{border-color:var(--vscode-focusBorder)}.num{font-weight:bold;font-size:1.2em;opacity:.7}
+.shapes{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0}.shape{font-family:var(--vscode-editor-font-family);background:var(--vscode-badge-background);color:var(--vscode-badge-foreground);padding:1px 8px;border-radius:10px}
+.op{font-family:var(--vscode-editor-font-family);opacity:.85;font-size:.9em}.arrow{opacity:.6;line-height:1.4}
+.loc{font-size:.85em;opacity:.7}.note{font-size:.9em}
+#tip{position:fixed;pointer-events:none;background:var(--vscode-editorHoverWidget-background);border:1px solid var(--vscode-editorHoverWidget-border);padding:4px 8px;display:none;max-width:400px;z-index:99;font-size:12px}

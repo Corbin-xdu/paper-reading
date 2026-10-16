@@ -1,0 +1,226 @@
+{
+  "name": "paper-code-analyzer",
+  "displayName": "Paper Code Analyzer (论文代码对照解析)",
+  "description": "下载论文与代码，用 LLM 深度解析架构、数据流与张量维度，并生成论文-代码对照报告（AI/具身智能）",
+  "version": "0.2.7",
+  "publisher": "eden",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other",
+    "Machine Learning"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Corbin-xdu/paper-reading.git"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "paperCode.analyze",
+        "title": "Analyze Paper + Code (解析论文+代码)",
+        "icon": "$(add)"
+      },
+      {
+        "command": "paperCode.setApiKey",
+        "title": "Set API Key (设置 OpenAI 兼容 API Key)"
+      },
+      {
+        "command": "paperCode.openReport",
+        "title": "打开报告"
+      },
+      {
+        "command": "paperCode.refresh",
+        "title": "刷新",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "paperCode.openGraph",
+        "title": "打开架构图"
+      },
+      {
+        "command": "paperCode.deleteEntry",
+        "title": "从列表移除"
+      }
+    ],
+    "configuration": {
+      "title": "Paper Code Analyzer",
+      "properties": {
+        "paperCode.provider": {
+          "type": "string",
+          "enum": ["grok", "openai"],
+          "default": "grok",
+          "description": "内置模型来源。grok：调用本机已登录的 Grok（不需要 API Key）。openai：调用 OpenAI 兼容接口。"
+        },
+        "paperCode.grokHome": {
+          "type": "string",
+          "default": "",
+          "description": "本机 Grok 的配置目录，对应环境变量 GROK_HOME。登录状态、模型列表和 config.toml 都从这里读。留空使用 %USERPROFILE%\\.grok。也可以直接填 config.toml 的完整路径，插件会改用它所在的目录。"
+        },
+        "paperCode.grokPath": {
+          "type": "string",
+          "default": "",
+          "description": "grok 可执行文件路径。留空则先找配置目录下的 bin/grok，再找 %USERPROFILE%\\.grok\\bin\\grok，最后退回 PATH。"
+        },
+        "paperCode.reasoningEffort": {
+          "type": "string",
+          "enum": ["config", "none", "minimal", "low", "medium", "high", "xhigh", "max"],
+          "enumDescriptions": [
+            "不传思考深度，沿用配置目录 config.toml 里的 models.default_reasoning_effort",
+            "不思考",
+            "极少思考",
+            "较少思考。默认值，三次分析会话更快",
+            "中等",
+            "较深",
+            "很深，更慢，架构和张量形状会更细",
+            "最高档。当前模型菜单里没有这一档时，Grok 会忽略"
+          ],
+          "default": "low",
+          "description": "论文、代码、综合三个分析会话的思考深度。默认 low。选 config 时使用 Grok 配置文件里的默认深度（本机常见是 high）。"
+        },
+        "paperCode.chatReasoningEffort": {
+          "type": "string",
+          "enum": ["config", "none", "minimal", "low", "medium", "high", "xhigh", "max"],
+          "enumDescriptions": [
+            "不传思考深度，沿用配置目录 config.toml 里的默认值",
+            "不思考",
+            "极少思考",
+            "较少思考。默认值",
+            "中等",
+            "较深",
+            "很深",
+            "最高档。当前模型不支持时 Grok 会忽略"
+          ],
+          "default": "low",
+          "description": "侧边栏问答的思考深度，和分析会话分开。默认 low。问答仍然不派子代理、不联网、不改仓库。"
+        },
+        "paperCode.subagents": {
+          "type": "boolean",
+          "default": true,
+          "description": "分析会话是否允许自己派子代理分工阅读论文和代码。关闭后每个会话只在主进程里读文件。问答始终不派子代理。"
+        },
+        "paperCode.webSearch": {
+          "type": "boolean",
+          "default": false,
+          "description": "分析会话是否允许联网搜索。默认关闭，只读本机已下载的论文和代码。问答始终不联网。"
+        },
+        "paperCode.baseUrl": {
+          "type": "string",
+          "default": "https://api.openai.com/v1",
+          "description": "仅 openai 模式：OpenAI 兼容接口 Base URL（如 DeepSeek/通义/本地 vLLM）"
+        },
+        "paperCode.model": {
+          "type": "string",
+          "default": "grok-4.7-build-fast",
+          "description": "模型名。grok 模式必须是 grok models 里的名字（如 grok-4.7-build-fast）。填了 gpt-4.1 这类名字时会自动改用本机 Grok 默认模型。openai 模式改为该接口的模型名。"
+        },
+        "paperCode.agentTurns": {
+          "type": "number",
+          "default": 30,
+          "description": "每个 Grok 分析会话最多多少轮（含子代理阅读）。论文、代码、综合各算一个会话。"
+        },
+        "paperCode.language": {
+          "type": "string",
+          "enum": [
+            "zh",
+            "en"
+          ],
+          "default": "zh",
+          "description": "报告语言"
+        },
+        "paperCode.maxChunkChars": {
+          "type": "number",
+          "default": 24000,
+          "description": "每次发送给 LLM 的最大字符数"
+        },
+        "paperCode.maxCodeFiles": {
+          "type": "number",
+          "default": 25,
+          "description": "深度分析的最多 Python 文件数"
+        },
+        "paperCode.outputDir": {
+          "type": "string",
+          "default": "paper-analysis",
+          "description": "工作区内输出目录（论文、代码、报告）"
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "paperCode",
+          "title": "论文代码解析",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "paperCode": [
+        {
+          "id": "paperCode.papers",
+          "name": "已解析论文"
+        },
+        {
+          "id": "paperCode.chat",
+          "name": "问答 Chat",
+          "type": "webview"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "paperCode.analyze",
+          "when": "view == paperCode.papers",
+          "group": "navigation"
+        },
+        {
+          "command": "paperCode.refresh",
+          "when": "view == paperCode.papers",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "paperCode.openGraph",
+          "when": "view == paperCode.papers && viewItem == paper"
+        },
+        {
+          "command": "paperCode.deleteEntry",
+          "when": "view == paperCode.papers && viewItem == paper"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "paperCode.papers",
+        "contents": "还没有解析过的论文。\n[解析论文 + 代码](command:paperCode.analyze)\n默认使用本机已登录的 Grok。改用其他接口时再 [设置 API Key](command:paperCode.setApiKey)"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "node scripts/copy-vendor.js && tsc -p ./",
+    "test:core": "node out/test/core.test.js",
+    "test:graph": "node out/test/graph.test.js",
+    "package": "npm run compile && vsce package --allow-missing-repository"
+  },
+  "dependencies": {
+    "pdf-parse": "1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "1.80.0",
+    "@vscode/vsce": "^3.0.0",
+    "typescript": "^5.4.0",
+    "cytoscape": "^3.34.3",
+    "cytoscape-dagre": "^2.5.0",
+    "dagre": "^0.8.5",
+    "marked": "^12.0.2",
+    "mermaid": "^10.9.8",
+    "katex": "^0.16.47"
+  }
+}

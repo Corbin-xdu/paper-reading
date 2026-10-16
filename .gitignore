@@ -1,0 +1,8 @@
+node_modules/
+out/
+media/vendor/
+paper-analysis/
+sessions/
+*.vsix
+*.log
+.vscode/
